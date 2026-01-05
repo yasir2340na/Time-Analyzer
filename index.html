@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Analyzer - Track Your Daily Activities</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
     <header>
@@ -144,6 +145,37 @@
                         <option value="month">This Month</option>
                         <option value="all">All Time</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- Chart Visualizations -->
+            <div class="charts-section">
+                <h3>📈 Visual Analytics</h3>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h4>🥧 Category Distribution</h4>
+                        </div>
+                        <canvas id="categoryPieChart"></canvas>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h4>🍩 Productivity Split</h4>
+                        </div>
+                        <canvas id="productivityDoughnutChart"></canvas>
+                    </div>
+                    <div class="chart-container full-width">
+                        <div class="chart-header">
+                            <h4>📊 Daily Time Tracking</h4>
+                        </div>
+                        <canvas id="dailyBarChart"></canvas>
+                    </div>
+                    <div class="chart-container full-width">
+                        <div class="chart-header">
+                            <h4>📉 Weekly Trend</h4>
+                        </div>
+                        <canvas id="weeklyLineChart"></canvas>
+                    </div>
                 </div>
             </div>
 

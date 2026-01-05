@@ -3,6 +3,7 @@
 
 // Global state
 let activities = [];
+let chartInstances = {};
 
 // Navigation functionality (Module 1)
 document.addEventListener('DOMContentLoaded', () => {
@@ -402,6 +403,7 @@ function setupReports() {
 function updateReports(timeRange = 'week') {
     const filteredActivities = filterByTimeRange(activities, timeRange);
     
+    updateCharts(filteredActivities, timeRange);
     updateProductivityAnalysis(filteredActivities);
     updateCategoryBreakdown(filteredActivities);
     updateDailySummary(filteredActivities);
@@ -727,4 +729,350 @@ function updateInsights(activities, timeRange) {
             </div>
         </div>
     `).join('');
+}
+
+// ===== MODULE 5: Chart Visualizations =====
+
+// Destroy existing chart if it exists
+function destroyChart(chartId) {
+    if (chartInstances[chartId]) {
+        chartInstances[chartId].destroy();
+        delete chartInstances[chartId];
+    }
+}
+
+// Update all charts
+function updateCharts(activities, timeRange) {
+    if (activities.length === 0) {
+        showNoDataCharts();
+        return;
+    }
+    
+    createCategoryPieChart(activities);
+    createProductivityDoughnutChart(activities);
+    createDailyBarChart(activities, timeRange);
+    createWeeklyLineChart(activities);
+}
+
+// Show no data message for charts
+function showNoDataCharts() {
+    const chartIds = ['categoryPieChart', 'productivityDoughnutChart', 'dailyBarChart', 'weeklyLineChart'];
+    chartIds.forEach(id => {
+        destroyChart(id);
+        const canvas = document.getElementById(id);
+        const container = canvas.parentElement;
+        container.innerHTML = `
+            <div class="chart-header">
+                <h4>${container.querySelector('h4').textContent}</h4>
+            </div>
+            <div class="no-data-chart">
+                <div class="no-data-chart-icon">📊</div>
+                <p>No data available for visualization</p>
+            </div>
+        `;
+    });
+}
+
+// Category Pie Chart
+function createCategoryPieChart(activities) {
+    destroyChart('categoryPieChart');
+    
+    const categoryData = {};
+    const categoryColors = {
+        study: '#2196f3',
+        work: '#ff9800',
+        sleep: '#9c27b0',
+        leisure: '#4caf50',
+        exercise: '#e91e63',
+        social: '#00bcd4',
+        other: '#757575'
+    };
+    
+    activities.forEach(activity => {
+        const category = activity.category;
+        const minutes = activity.hours * 60 + activity.minutes;
+        categoryData[category] = (categoryData[category] || 0) + minutes;
+    });
+    
+    const labels = Object.keys(categoryData).map(cat => capitalizeFirst(cat));
+    const data = Object.values(categoryData);
+    const colors = Object.keys(categoryData).map(cat => categoryColors[cat]);
+    
+    const ctx = document.getElementById('categoryPieChart').getContext('2d');
+    chartInstances['categoryPieChart'] = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${formatTime(value)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Productivity Doughnut Chart
+function createProductivityDoughnutChart(activities) {
+    destroyChart('productivityDoughnutChart');
+    
+    const productiveTime = activities
+        .filter(a => productiveCategories.includes(a.category))
+        .reduce((sum, a) => sum + (a.hours * 60 + a.minutes), 0);
+    
+    const unproductiveTime = activities
+        .filter(a => unproductiveCategories.includes(a.category))
+        .reduce((sum, a) => sum + (a.hours * 60 + a.minutes), 0);
+    
+    const ctx = document.getElementById('productivityDoughnutChart').getContext('2d');
+    chartInstances['productivityDoughnutChart'] = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Productive', 'Unproductive'],
+            datasets: [{
+                data: [productiveTime, unproductiveTime],
+                backgroundColor: [
+                    '#4caf50',
+                    '#ff5722'
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 15,
+                        font: {
+                            size: 12,
+                            weight: '600'
+                        },
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${formatTime(value)} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Daily Bar Chart
+function createDailyBarChart(activities, timeRange) {
+    destroyChart('dailyBarChart');
+    
+    const dailyData = {};
+    
+    activities.forEach(activity => {
+        const date = activity.date;
+        const minutes = activity.hours * 60 + activity.minutes;
+        dailyData[date] = (dailyData[date] || 0) + minutes;
+    });
+    
+    // Sort by date
+    const sortedDates = Object.keys(dailyData).sort();
+    const labels = sortedDates.map(date => formatDate(date));
+    const data = sortedDates.map(date => dailyData[date] / 60); // Convert to hours
+    
+    const ctx = document.getElementById('dailyBarChart').getContext('2d');
+    chartInstances['dailyBarChart'] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Hours per Day',
+                data: data,
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 8,
+                barThickness: 40
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + 'h';
+                        },
+                        font: {
+                            size: 11,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 11,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const hours = Math.floor(context.parsed.y);
+                            const minutes = Math.round((context.parsed.y - hours) * 60);
+                            return `Time: ${hours}h ${minutes}m`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Weekly Line Chart
+function createWeeklyLineChart(activities) {
+    destroyChart('weeklyLineChart');
+    
+    const dailyData = {};
+    
+    activities.forEach(activity => {
+        const date = activity.date;
+        const minutes = activity.hours * 60 + activity.minutes;
+        dailyData[date] = (dailyData[date] || 0) + minutes;
+    });
+    
+    // Get last 14 days
+    const today = new Date();
+    const dates = [];
+    for (let i = 13; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - i);
+        dates.push(date.toISOString().split('T')[0]);
+    }
+    
+    const labels = dates.map(date => {
+        const d = new Date(date);
+        return `${d.getMonth() + 1}/${d.getDate()}`;
+    });
+    
+    const data = dates.map(date => (dailyData[date] || 0) / 60); // Convert to hours
+    
+    const ctx = document.getElementById('weeklyLineChart').getContext('2d');
+    chartInstances['weeklyLineChart'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Daily Hours Trend',
+                data: data,
+                borderColor: 'rgba(118, 75, 162, 1)',
+                backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: 'rgba(118, 75, 162, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointHoverRadius: 7
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + 'h';
+                        },
+                        font: {
+                            size: 11,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        font: {
+                            size: 10,
+                            weight: '600'
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(0, 0, 0, 0.05)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const hours = Math.floor(context.parsed.y);
+                            const minutes = Math.round((context.parsed.y - hours) * 60);
+                            return `Time: ${hours}h ${minutes}m`;
+                        }
+                    }
+                }
+            }
+        }
+    });
 }
