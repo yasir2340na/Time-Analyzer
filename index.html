@@ -135,7 +135,64 @@
 
         <!-- Module 5: Reports & Visualization -->
         <section id="reports" class="section">
-            <h2>Reports & Analytics</h2>
+            <div class="reports-header">
+                <h2>📊 Reports & Analytics</h2>
+                <div class="date-range-selector">
+                    <select id="time-range" class="filter-select">
+                        <option value="today">Today</option>
+                        <option value="week" selected>This Week</option>
+                        <option value="month">This Month</option>
+                        <option value="all">All Time</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Productivity Analysis -->
+            <div class="analysis-section">
+                <h3>⚡ Productivity Analysis</h3>
+                <div class="productivity-container">
+                    <div class="productivity-card productive">
+                        <div class="productivity-icon">✅</div>
+                        <div class="productivity-info">
+                            <span class="productivity-label">Productive Time</span>
+                            <span class="productivity-value" id="productive-time">0h 0m</span>
+                            <span class="productivity-percent" id="productive-percent">0%</span>
+                        </div>
+                    </div>
+                    <div class="productivity-card unproductive">
+                        <div class="productivity-icon">⚠️</div>
+                        <div class="productivity-info">
+                            <span class="productivity-label">Unproductive Time</span>
+                            <span class="productivity-value" id="unproductive-time">0h 0m</span>
+                            <span class="productivity-percent" id="unproductive-percent">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="analysis-section">
+                <h3>📂 Category Breakdown</h3>
+                <div id="category-breakdown" class="category-breakdown">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <!-- Daily Summary -->
+            <div class="analysis-section">
+                <h3>📅 Daily Summary</h3>
+                <div id="daily-summary" class="daily-summary">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+
+            <!-- Time Wastage Insights -->
+            <div class="analysis-section">
+                <h3>🔍 Insights & Recommendations</h3>
+                <div id="insights-container" class="insights-container">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
         </section>
     </main>
 
