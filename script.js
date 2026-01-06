@@ -1,9 +1,10 @@
 // Time Analyzer - Main JavaScript File
-// Module 3: Data Storage & Module 4: Analysis Engine
+// Modules: Data Storage, Analysis Engine, Charts, Smart Suggestions, History
 
 // Global state
 let activities = [];
 let chartInstances = {};
+let currentCalendarDate = new Date();
 
 // Navigation functionality (Module 1)
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,7 +18,50 @@ function initializeApp() {
     loadActivitiesFromStorage();
     setupDashboard();
     setupReports();
-    console.log('Time Analyzer initialized');
+    setupHistory();
+    updateHeaderStats();
+    console.log('Time Analyzer initialized successfully! 🚀');
+}
+
+// Update header quick stats
+function updateHeaderStats() {
+    // Update activity count
+    const headerActivities = document.getElementById('header-activities');
+    if (headerActivities) {
+        headerActivities.textContent = activities.length;
+    }
+    
+    // Calculate streak
+    const headerStreak = document.getElementById('header-streak');
+    if (headerStreak) {
+        const streak = calculateCurrentStreak();
+        headerStreak.textContent = streak;
+    }
+}
+
+// Calculate current streak
+function calculateCurrentStreak() {
+    if (activities.length === 0) return 0;
+    
+    const uniqueDates = [...new Set(activities.map(a => a.date))].sort();
+    const today = new Date().toISOString().split('T')[0];
+    const hasToday = uniqueDates.includes(today);
+    
+    if (!hasToday) return 0;
+    
+    let streak = 1;
+    for (let i = uniqueDates.length - 2; i >= 0; i--) {
+        const prevDate = new Date(uniqueDates[i]);
+        const nextDate = new Date(uniqueDates[i + 1]);
+        const dayDiff = Math.floor((nextDate - prevDate) / (1000 * 60 * 60 * 24));
+        
+        if (dayDiff === 1) {
+            streak++;
+        } else {
+            break;
+        }
+    }
+    return streak;
 }
 
 // Navigation between sections
@@ -41,6 +85,11 @@ function setupNavigation() {
             if (targetSection === 'reports') {
                 const timeRange = document.getElementById('time-range').value;
                 updateReports(timeRange);
+            }
+            
+            // Refresh history when navigating to history section
+            if (targetSection === 'history') {
+                updateHistory();
             }
         });
     });
@@ -191,6 +240,7 @@ function addActivity(activityData) {
     activities.push(activityData);
     if (saveActivitiesToStorage()) {
         updateDashboard();
+        updateHeaderStats();
         return true;
     }
     return false;
@@ -203,6 +253,7 @@ function deleteActivity(id) {
         activities.splice(index, 1);
         saveActivitiesToStorage();
         updateDashboard();
+        updateHeaderStats();
         return true;
     }
     return false;
@@ -215,6 +266,7 @@ function updateActivity(id, updatedData) {
         activities[index] = { ...activities[index], ...updatedData };
         saveActivitiesToStorage();
         updateDashboard();
+        updateHeaderStats();
         return true;
     }
     return false;
@@ -226,6 +278,7 @@ function clearAllActivities() {
         activities = [];
         saveActivitiesToStorage();
         updateDashboard();
+        updateHeaderStats();
         showFormMessage('All activities have been cleared!', 'success');
     }
 }
@@ -1081,4 +1134,245 @@ function createWeeklyLineChart(activities) {
             }
         }
     });
+}
+
+// ===== MODULE 7: Activity History with Calendar =====
+
+function setupHistory() {
+    // Calendar navigation
+    document.getElementById('prev-month').addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+        renderCalendar();
+    });
+    
+    document.getElementById('next-month').addEventListener('click', () => {
+        currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+        renderCalendar();
+    });
+    
+    // Search functionality
+    document.getElementById('search-activities').addEventListener('input', (e) => {
+        displayHistoryActivities(e.target.value);
+    });
+    
+    // Export buttons
+    document.getElementById('export-csv').addEventListener('click', exportToCSV);
+    document.getElementById('export-json').addEventListener('click', exportToJSON);
+    
+    // Initial render
+    renderCalendar();
+    updateHistory();
+}
+
+function updateHistory() {
+    renderCalendar();
+    displayHistoryActivities();
+    updateHistoryStats();
+}
+
+// Render calendar
+function renderCalendar() {
+    const monthYearLabel = document.getElementById('calendar-month-year');
+    const calendarDays = document.getElementById('calendar-days');
+    
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    monthYearLabel.textContent = `${monthNames[month]} ${year}`;
+    
+    // Get first day of month and total days
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Get activity dates for this month
+    const activityDates = activities
+        .filter(a => {
+            const date = new Date(a.date);
+            return date.getMonth() === month && date.getFullYear() === year;
+        })
+        .map(a => new Date(a.date).getDate());
+    
+    const today = new Date();
+    const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
+    const todayDate = today.getDate();
+    
+    let html = '';
+    
+    // Empty cells for days before first day of month
+    for (let i = 0; i < firstDay; i++) {
+        html += '<div class="calendar-day empty"></div>';
+    }
+    
+    // Days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+        const hasActivity = activityDates.includes(day);
+        const isToday = isCurrentMonth && day === todayDate;
+        
+        let classes = 'calendar-day';
+        if (hasActivity) classes += ' has-activity';
+        if (isToday) classes += ' today';
+        
+        html += `<div class="${classes}" data-date="${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}">${day}</div>`;
+    }
+    
+    calendarDays.innerHTML = html;
+    
+    // Add click listeners to days
+    document.querySelectorAll('.calendar-day:not(.empty)').forEach(day => {
+        day.addEventListener('click', () => {
+            const date = day.getAttribute('data-date');
+            filterActivitiesByDate(date);
+            
+            // Update selected state
+            document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('selected'));
+            day.classList.add('selected');
+        });
+    });
+}
+
+// Filter activities by date
+function filterActivitiesByDate(date) {
+    const filtered = activities.filter(a => a.date === date);
+    displayHistoryActivities('', filtered);
+}
+
+// Display history activities
+function displayHistoryActivities(searchTerm = '', filteredActivities = null) {
+    const container = document.getElementById('history-activities');
+    let activitiesToShow = filteredActivities || [...activities];
+    
+    // Apply search filter
+    if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        activitiesToShow = activitiesToShow.filter(a => 
+            a.activityName.toLowerCase().includes(term) ||
+            a.category.toLowerCase().includes(term) ||
+            (a.notes && a.notes.toLowerCase().includes(term))
+        );
+    }
+    
+    // Sort by date (newest first)
+    activitiesToShow.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    if (activitiesToShow.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="padding: 40px;">
+                <div class="empty-icon">📭</div>
+                <p>${searchTerm ? 'No activities match your search' : 'No activities recorded yet'}</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const categoryEmojis = {
+        study: '📚', work: '💼', sleep: '😴', leisure: '🎮',
+        exercise: '🏃', social: '👥', other: '📌'
+    };
+    
+    container.innerHTML = activitiesToShow.map(activity => `
+        <div class="history-item">
+            <span class="history-item-icon">${categoryEmojis[activity.category]}</span>
+            <div class="history-item-info">
+                <div class="history-item-name">${activity.activityName}</div>
+                <div class="history-item-meta">
+                    <span class="history-item-time">⏱️ ${formatTime(activity.hours * 60 + activity.minutes)}</span>
+                    <span>📅 ${formatDate(activity.date)}</span>
+                    <span>🏷️ ${capitalizeFirst(activity.category)}</span>
+                </div>
+            </div>
+            <button class="history-item-delete" data-id="${activity.id}">🗑️</button>
+        </div>
+    `).join('');
+    
+    // Add delete listeners
+    container.querySelectorAll('.history-item-delete').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const id = parseInt(btn.getAttribute('data-id'));
+            if (confirm('Delete this activity?')) {
+                deleteActivity(id);
+                updateHistory();
+            }
+        });
+    });
+}
+
+// Update history statistics
+function updateHistoryStats() {
+    // Total days tracked
+    const uniqueDays = new Set(activities.map(a => a.date)).size;
+    document.getElementById('total-days').textContent = uniqueDays;
+    
+    // Average time per day
+    const totalMinutes = activities.reduce((sum, a) => sum + (a.hours * 60 + a.minutes), 0);
+    const avgDaily = uniqueDays > 0 ? Math.round(totalMinutes / uniqueDays) : 0;
+    document.getElementById('avg-daily').textContent = formatTime(avgDaily);
+    
+    // Most productive category
+    const categoryTimes = {};
+    activities.forEach(a => {
+        categoryTimes[a.category] = (categoryTimes[a.category] || 0) + (a.hours * 60 + a.minutes);
+    });
+    
+    const topCategory = Object.entries(categoryTimes).sort((a, b) => b[1] - a[1])[0];
+    document.getElementById('most-productive').textContent = topCategory ? capitalizeFirst(topCategory[0]) : '-';
+    
+    // Longest activity
+    if (activities.length > 0) {
+        const longest = activities.reduce((max, a) => {
+            const time = a.hours * 60 + a.minutes;
+            return time > (max.hours * 60 + max.minutes) ? a : max;
+        });
+        document.getElementById('longest-activity').textContent = longest.activityName.substring(0, 15) + (longest.activityName.length > 15 ? '...' : '');
+    } else {
+        document.getElementById('longest-activity').textContent = '-';
+    }
+}
+
+// Export to CSV
+function exportToCSV() {
+    if (activities.length === 0) {
+        alert('No activities to export!');
+        return;
+    }
+    
+    const headers = ['Activity Name', 'Category', 'Hours', 'Minutes', 'Date', 'Notes', 'Created At'];
+    const rows = activities.map(a => [
+        `"${a.activityName}"`,
+        a.category,
+        a.hours,
+        a.minutes,
+        a.date,
+        `"${a.notes || ''}"`,
+        a.createdAt
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    downloadFile(csvContent, 'time_analyzer_export.csv', 'text/csv');
+}
+
+// Export to JSON
+function exportToJSON() {
+    if (activities.length === 0) {
+        alert('No activities to export!');
+        return;
+    }
+    
+    const jsonContent = JSON.stringify(activities, null, 2);
+    downloadFile(jsonContent, 'time_analyzer_export.json', 'application/json');
+}
+
+// Download file helper
+function downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }

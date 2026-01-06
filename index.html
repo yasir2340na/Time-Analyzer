@@ -4,75 +4,128 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Analyzer - Track Your Daily Activities</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
+    <!-- Animated Background Particles -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
     <header>
-        <h1>⏱️ Time Analyzer</h1>
-        <p>Understand how you spend your time</p>
+        <div class="logo-container">
+            <div class="logo-icon">⏱️</div>
+            <h1>Time Analyzer</h1>
+        </div>
+        <p class="tagline">Understand how you spend your time • Make every moment count</p>
+        <div class="header-stats">
+            <span class="quick-stat">🔥 <span id="header-streak">0</span> day streak</span>
+            <span class="quick-stat">📊 <span id="header-activities">0</span> activities</span>
+        </div>
     </header>
 
     <nav>
-        <button class="nav-btn active" data-section="add-activity">Add Activity</button>
-        <button class="nav-btn" data-section="dashboard">Dashboard</button>
-        <button class="nav-btn" data-section="reports">Reports</button>
+        <button class="nav-btn active" data-section="add-activity">
+            <span class="nav-icon">➕</span>
+            <span class="nav-text">Add Activity</span>
+        </button>
+        <button class="nav-btn" data-section="dashboard">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Dashboard</span>
+        </button>
+        <button class="nav-btn" data-section="reports">
+            <span class="nav-icon">📈</span>
+            <span class="nav-text">Reports</span>
+        </button>
+        <button class="nav-btn" data-section="history">
+            <span class="nav-icon">📅</span>
+            <span class="nav-text">History</span>
+        </button>
     </nav>
 
     <main>
         <!-- Module 2: Activity Input -->
         <section id="add-activity" class="section active">
-            <h2>Add New Activity</h2>
+            <div class="section-header">
+                <h2>✨ Add New Activity</h2>
+                <p class="section-subtitle">Track what you're doing to gain insights</p>
+            </div>
             
             <form id="activity-form" class="activity-form">
-                <div class="form-group">
-                    <label for="activity-name">Activity Name *</label>
-                    <input type="text" id="activity-name" name="activityName" 
-                           placeholder="e.g., Reading, Coding, Netflix" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="category">Category *</label>
-                    <select id="category" name="category" required>
-                        <option value="">Select a category</option>
-                        <option value="study">📚 Study</option>
-                        <option value="work">💼 Work</option>
-                        <option value="sleep">😴 Sleep</option>
-                        <option value="leisure">🎮 Leisure</option>
-                        <option value="exercise">🏃 Exercise</option>
-                        <option value="social">👥 Social</option>
-                        <option value="other">📌 Other</option>
-                    </select>
-                </div>
-
-                <div class="form-row">
+                <div class="form-card">
                     <div class="form-group">
-                        <label for="hours">Hours *</label>
-                        <input type="number" id="hours" name="hours" 
-                               min="0" max="23" value="0" required>
+                        <label for="activity-name">
+                            <span class="label-icon">📝</span> Activity Name
+                        </label>
+                        <input type="text" id="activity-name" name="activityName" 
+                               placeholder="e.g., Reading, Coding, Netflix" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="minutes">Minutes *</label>
-                        <input type="number" id="minutes" name="minutes" 
-                               min="0" max="59" value="0" required>
+                        <label for="category">
+                            <span class="label-icon">🏷️</span> Category
+                        </label>
+                        <select id="category" name="category" required>
+                            <option value="">Select a category</option>
+                            <option value="study">📚 Study</option>
+                            <option value="work">💼 Work</option>
+                            <option value="sleep">😴 Sleep</option>
+                            <option value="leisure">🎮 Leisure</option>
+                            <option value="exercise">🏃 Exercise</option>
+                            <option value="social">👥 Social</option>
+                            <option value="other">📌 Other</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="date">Date *</label>
-                    <input type="date" id="date" name="date" required>
-                </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hours">
+                                <span class="label-icon">⏰</span> Hours
+                            </label>
+                            <input type="number" id="hours" name="hours" 
+                                   min="0" max="23" value="0" required>
+                        </div>
 
-                <div class="form-group">
-                    <label for="notes">Notes (Optional)</label>
-                    <textarea id="notes" name="notes" rows="3" 
-                              placeholder="Add any additional details..."></textarea>
+                        <div class="form-group">
+                            <label for="minutes">
+                                <span class="label-icon">⏱️</span> Minutes
+                            </label>
+                            <input type="number" id="minutes" name="minutes" 
+                                   min="0" max="59" value="30" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">
+                            <span class="label-icon">📅</span> Date
+                        </label>
+                        <input type="date" id="date" name="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">
+                            <span class="label-icon">📋</span> Notes (Optional)
+                        </label>
+                        <textarea id="notes" name="notes" rows="3" 
+                                  placeholder="Add any additional details..."></textarea>
+                    </div>
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Add Activity</button>
-                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                    <button type="submit" class="btn btn-primary">
+                        <span class="btn-icon">✓</span> Add Activity
+                    </button>
+                    <button type="reset" class="btn btn-secondary">
+                        <span class="btn-icon">↺</span> Clear Form
+                    </button>
                 </div>
             </form>
 
@@ -81,9 +134,12 @@
 
         <!-- Module 5: Dashboard -->
         <section id="dashboard" class="section">
-            <div class="dashboard-header">
-                <h2>📊 Activity Dashboard</h2>
-                <button class="btn-icon" id="refresh-dashboard" title="Refresh">
+            <div class="section-header dashboard-header">
+                <div>
+                    <h2>📊 Activity Dashboard</h2>
+                    <p class="section-subtitle">Your activity overview at a glance</p>
+                </div>
+                <button class="btn-icon pulse-animation" id="refresh-dashboard" title="Refresh">
                     🔄
                 </button>
             </div>
@@ -292,7 +348,101 @@
                 </div>
             </div>
         </section>
+
+        <!-- Module 7: Activity History with Calendar -->
+        <section id="history" class="section">
+            <div class="section-header">
+                <h2>📅 Activity History</h2>
+                <p class="section-subtitle">View, search, and export your activity records</p>
+            </div>
+
+            <!-- Calendar View -->
+            <div class="history-calendar">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prev-month">❮</button>
+                    <h3 id="calendar-month-year">January 2026</h3>
+                    <button class="calendar-nav" id="next-month">❯</button>
+                </div>
+                <div class="calendar-weekdays">
+                    <span>Sun</span>
+                    <span>Mon</span>
+                    <span>Tue</span>
+                    <span>Wed</span>
+                    <span>Thu</span>
+                    <span>Fri</span>
+                    <span>Sat</span>
+                </div>
+                <div id="calendar-days" class="calendar-days">
+                    <!-- Days generated by JS -->
+                </div>
+            </div>
+
+            <!-- Search and Filter -->
+            <div class="history-controls">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-activities" placeholder="Search activities...">
+                </div>
+                <div class="export-buttons">
+                    <button class="btn-export" id="export-csv">
+                        📄 Export CSV
+                    </button>
+                    <button class="btn-export" id="export-json">
+                        📋 Export JSON
+                    </button>
+                </div>
+            </div>
+
+            <!-- Activity List -->
+            <div class="history-list">
+                <h3>📋 Activity Log</h3>
+                <div id="history-activities" class="history-activities">
+                    <!-- Activities loaded by JS -->
+                </div>
+            </div>
+
+            <!-- Statistics Summary -->
+            <div class="history-stats">
+                <h3>📊 Statistics Summary</h3>
+                <div class="stats-grid">
+                    <div class="mini-stat">
+                        <span class="mini-stat-icon">📅</span>
+                        <div class="mini-stat-info">
+                            <span class="mini-stat-value" id="total-days">0</span>
+                            <span class="mini-stat-label">Days Tracked</span>
+                        </div>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-icon">⏱️</span>
+                        <div class="mini-stat-info">
+                            <span class="mini-stat-value" id="avg-daily">0h</span>
+                            <span class="mini-stat-label">Avg per Day</span>
+                        </div>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-icon">🏆</span>
+                        <div class="mini-stat-info">
+                            <span class="mini-stat-value" id="most-productive">-</span>
+                            <span class="mini-stat-label">Top Category</span>
+                        </div>
+                    </div>
+                    <div class="mini-stat">
+                        <span class="mini-stat-icon">🎯</span>
+                        <div class="mini-stat-info">
+                            <span class="mini-stat-value" id="longest-activity">-</span>
+                            <span class="mini-stat-label">Longest Session</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>Made with ❤️ using HTML, CSS & JavaScript</p>
+        <p class="version">Version 1.0 | Time Analyzer © 2026</p>
+    </footer>
 
     <script src="script.js"></script>
 </body>
