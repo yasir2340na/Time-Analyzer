@@ -58,12 +58,12 @@ Time Analyzer helps users track their daily activities and gain insights into ho
 ## 📝 Development Progress
 
 - [x] Initial project setup
-- [ ] Module 1: UI Layout
-- [ ] Module 2: Activity Input
-- [ ] Module 3: Data Storage
-- [ ] Module 4: Analysis Engine
-- [ ] Module 5: Visualizations
-- [ ] Module 6: Smart Suggestions
+- [x] Module 1: UI Layout
+- [x] Module 2: Activity Input
+- [x] Module 3: Data Storage
+- [x] Module 4: Analysis Engine
+- [x] Module 5: Visualizations
+- [x] Module 6: Smart Suggestions
 
 ## 👨‍💻 Author
 

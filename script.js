@@ -395,6 +395,11 @@ function setupReports() {
         updateReports(e.target.value);
     });
     
+    // Smart suggestions refresh button
+    document.getElementById('refresh-suggestions').addEventListener('click', () => {
+        updateSmartSuggestions(activities);
+    });
+    
     // Initial load with week view
     updateReports('week');
 }
@@ -408,6 +413,7 @@ function updateReports(timeRange = 'week') {
     updateCategoryBreakdown(filteredActivities);
     updateDailySummary(filteredActivities);
     updateInsights(filteredActivities, timeRange);
+    updateSmartSuggestions(activities); // Use all activities for pattern detection
 }
 
 // Filter activities by time range
